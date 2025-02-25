@@ -15,6 +15,8 @@ namespace FtdiSharp.FTD2XX;
 
 public class FTDI
 {
+    private const string logFilePath = "error_log.txt";
+
     #region CONSTRUCTOR_DESTRUCTOR
     // constructor
     /// <summary>
@@ -4524,11 +4526,21 @@ public class FTDI
     /// This function is invoked when this FTDI library produces a serious error.
     /// Overwrite this to customize error reporting behavior.
     /// </summary>
-    public Action<string> ErrorMessageAction = ShowErrorMessageToConsole;
+    public Action<string> ErrorMessageAction = LogErrorMessage;
 
-    private static void ShowErrorMessageToConsole(string message)
+    private static void LogErrorMessage(string message)
     {
         System.Diagnostics.Debug.WriteLine(message);
+
+        try
+        {
+            using StreamWriter writer = new(logFilePath, true);
+            writer.WriteLine($"{DateTime.Now}: {message}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to write to log file: {ex.Message}");
+        }
     }
 
     public void FlushBuffer()
